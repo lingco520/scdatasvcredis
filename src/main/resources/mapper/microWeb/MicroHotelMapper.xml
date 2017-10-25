@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.spring.springboot.dao.microWeb.MicroHotelMapper">
+    <select id="getWgwList" resultType="org.spring.springboot.domain.mysqlBean.microWeb.HotelWgwVo" parameterType="java.util.Map">
+
+        SELECT
+        ACOS(SIN((${latitude} * 3.1415) / 180 ) *SIN((a.latitude * 3.1415) / 180 ) +COS((${latitude} * 3.1415) / 180 ) * COS((a.latitude * 3.1415) / 180 ) *COS((${longitude} * 3.1415) / 180 - (a.longitude * 3.1415) / 180 ) ) * 6380 as dis,
+        a.administrativedivision,a.id,a.name,a.address,a.level,a.longitude,a.latitude,a.picturelibrary as sketchPicture,a.checkPrice,a.checkPriceTime,a.playSign,a.sign720,a.picUrl360,a.resourceCode from (select s.resourceCode,s.id,s.name,d.NAME as level,s.address,s.longitude,s.latitude,s.vcode,s.picturelibrary,s.checkPrice,s.checkPriceTime,s.playSign,s.sign720,s.picUrl360,s.administrativedivision
+        FROM api_accommodation s,sys_dict d
+        WHERE  s.turisthotelLevel = d.skey   and s.status  != -99  and  s.status  != 0) a   where 1=1
+
+
+
+
+        <if test="name != null">
+            and a.name like '%${name}%'
+        </if>
+        <if test="level != null">
+            and a.level like '%${level}%'
+        </if>
+        <if test="region != null">
+            and a.administrativedivision=#{region}
+        </if>
+        <if test="startPrice != null and endPrice != null">
+            <![CDATA[  and a.checkPrice >= #{startPrice} and  a.checkPrice < #{endPrice} ]]>
+        </if>
+        <if test="startPrice == null and endPrice != null">
+            <![CDATA[  and a.checkPrice < #{endPrice}  ]]>
+        </if>
+        <if test="startPrice != null and endPrice == null">
+            <![CDATA[  and a.checkPrice >= #{startPrice}    ]]>
+        </if>
+
+
+
+        <if test="startTime != null">
+            <![CDATA[  and date_format(a.checkPriceTime,'%Y-%m-%d')  >= #{startTime}    ]]>
+        </if>
+
+        <if test="endTime != null">
+            <![CDATA[  and date_format(a.checkPriceTime,'%Y-%m-%d')  < #{endTime}    ]]>
+        </if>
+
+        <if test="longitude != null and latitude != null and  dis != null">
+            <![CDATA[  and ACOS(SIN((${latitude} * 3.1415) / 180 ) *SIN((a.latitude * 3.1415) / 180 ) +COS((${latitude} * 3.1415) / 180 ) * COS((a.latitude * 3.1415) / 180 ) *COS((${longitude} * 3.1415) / 180 - (a.longitude * 3.1415) / 180 ) ) * 6380 < ${dis} order by dis  asc]]>
+        </if>
+        <if test="longitude == 0.0 and latitude == 0.0 ">
+            <![CDATA[  ORDER BY a.playSign DESC ]]>
+        </if>
+        LIMIT #{page},#{pageSize};
+
+    </select>
+
+
+    <select id="getWgwCount" resultType="java.lang.Integer" parameterType="map">
+        SELECT count(*) from (select s.id,s.name,d.NAME as level,s.address,s.longitude,s.latitude,s.vcode,s.sketchPicture,s.checkPrice,s.checkPriceTime,s.playSign,s.sign720,s.picUrl360,s.administrativedivision
+        FROM api_accommodation s,sys_dict d,api_region r
+        WHERE  s.turisthotelLevel = d.skey and s.administrativeDivision = r.REGION  and s.status  != -99  and s.status  != 0 ) a   where a.name like '%${name}%' and a.level like '%${level}%'
+        <if test="region != null">
+            and a.administrativedivision=#{region}
+        </if>
+        <if test="startPrice != null and endPrice != null">
+            <![CDATA[  and a.checkPrice >= #{startPrice} and  a.checkPrice < #{endPrice} ]]>
+        </if>
+        <if test="startPrice == null and endPrice != null">
+            <![CDATA[  and a.checkPrice < #{endPrice}  ]]>
+        </if>
+        <if test="startPrice != null and endPrice == null">
+            <![CDATA[  and a.checkPrice >= #{startPrice}    ]]>
+        </if>
+
+        <if test="startTime != null and endTime == null">
+            <![CDATA[  and date_format(a.checkPriceTime,'%Y-%m-%d')  >= #{startTime}    ]]>
+        </if>
+
+        <if test="startTime != null and endTime == null">
+            <![CDATA[  and date_format(a.checkPriceTime,'%Y-%m-%d')  < #{endTime}    ]]>
+        </if>
+        <if test="startTime != null and endTime != null">
+            <![CDATA[  and date_format(a.checkPriceTime,'%Y-%m-%d') >= #{startTime} and  date_format(a.checkPriceTime,'%Y-%m-%d') < #{endTime} ]]>
+        </if>
+        <if test="longitude != null and latitude != null and  dis != null">
+            <![CDATA[  and  ACOS(SIN((${latitude} * 3.1415) / 180 ) *SIN((a.latitude * 3.1415) / 180 ) +COS((${latitude} * 3.1415) / 180 ) * COS((a.latitude * 3.1415) / 180 ) *COS((${longitude} * 3.1415) / 180 - (a.longitude * 3.1415) / 180 ) ) * 6380 < ${dis} ]]>
+        </if>
+    </select>
+
+    <select id="getWgwHotel" resultType="org.spring.springboot.domain.mysqlBean.microWeb.Accommodation" parameterType="map">
+        select s.resourceCode,s.id,s.name,s.zhName,d.NAME as turisthotelLevel,r.MEMO as administrativeDivision,s.address,s.sort,s.status as statu ,s.openingTime,s.sketchPicture,s.introduction,s.longitude,s.latitude,s.phone,s.hotel_vhtype,s.vcode,s.pictureLibrary
+        ,s.checkPrice,s.checkPriceTime,s.playSign,s.sign720,s.picUrl360
+        from api_accommodation s,sys_dict d,api_region r
+        where s.turisthotelLevel = d.skey and s.administrativeDivision = r.REGION  and s.id=#{id} and s.status  != -99 and  s.status  != 0
+    </select>
+
+    <!-- 查询酒店类型-->
+    <select id="getTypeName" resultType="String" parameterType="String">
+        SELECT d.name from SYS_DICT d WHERE d.skey=#{hotelVType}
+    </select>
+
+</mapper>

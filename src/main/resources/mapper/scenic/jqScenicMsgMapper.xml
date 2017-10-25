@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.spring.springboot.dao.jqScenicMsg.JqScenicMsgDao">
+
+
+    <!--获取景区列表-->
+    <select id="getJqScenicList" parameterType="java.lang.String"
+            resultType="org.spring.springboot.domain.madeVoBean.JqScenicAreas">
+        select j.name, j.latitude, j.longitude, j.administrative_division as region
+          from jq_scenic_areas as j where vcode = #{vcode}
+    </select>
+</mapper>

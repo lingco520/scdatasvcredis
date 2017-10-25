@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.spring.springboot.dao.carflow.BigCarFlowDao">
+    <!-- 通过景区编码查询省份名,省份的region是前三位+"000"-->
+    <select id="getRegionByVcode" resultType="string" parameterType="string">
+        SELECT
+	    sr.`NAME`
+        FROM
+            sys_region sr
+        WHERE
+            sr.REGION = CONCAT(
+                SUBSTRING(
+                    (
+                        SELECT
+                            sr.REGION
+                        FROM
+                            sys_region sr
+                        INNER JOIN sys_manager_l sml ON sr.REGION = sml.REGION
+                        WHERE
+                            sml.VCODE = #{vcode}
+                        AND sml.REGION IS NOT NULL
+                        LIMIT 1
+                    ),
+                    1,
+                    2
+                ),
+                '0000'
+            )
+    </select>
+</mapper>

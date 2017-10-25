@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.spring.springboot.dao.microWeb.MicroTravelLineMapper">
+
+
+    <select id="getTouristRoutesInfo"   resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqTouristRoutesVo" parameterType="java.util.Map">
+        <![CDATA[
+        SELECT s.ID as id,s.`NAME` as name,s.IMAGE as image,s.TIME as time,s.ASPECT as aspect,s.SNACK as snack,s.PRECAUTIONS as precautions ,s.DETAILS as details,s. STATUS as `status`,s.sort FROM jq_tourist_routes as s WHERE s.`status` != -99  AND s.`status` != 0 and s.vcode=#{vcode}
+        LIMIT #{page},#{pageSize};
+        ]]>
+    </select>
+
+    <select id="getTouristRoutesCount"    resultType="java.lang.Integer" parameterType="map">
+        SELECT count(*)
+        FROM jq_tourist_routes s
+        WHERE  s.`status` != -99  and s.`status` != 0 and s.vcode=#{vcode}
+    </select>
+
+    <select id="getTouristRoutesInfoId"    resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqTouristRoutes" parameterType="map">
+        SELECT s.ID as id,s.`NAME` as name,s.IMAGE as image,s.TIME as time,s.ASPECT as aspect,s.SNACK as snack,s.PRECAUTIONS as precautions ,s.DETAILS as details,s. STATUS as `status`,s.sort,s.scenicId ,s.INTRODUCTION as introduction ,s.ADVANTAGE as advantage  FROM jq_tourist_routes as s
+        WHERE  s.`status` != -99 and s.`status` != 0 and s.vcode=#{vcode} and s.id=#{id};
+    </select>
+
+</mapper>

@@ -1,0 +1,62 @@
+server:
+  port: 8097
+  context-path: /scdatasvcredis
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://10.169.90.74:3365/scenic_db?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC&&useSSL=false
+    #username: scenic_db
+    #password: daqsoftScenicDb2017%$
+#    url: jdbc:mysql://120.24.81.145:3365/scenic_db?useUnicode=true&characterEncoding=UTF8&autoReconnect=true
+    username: scenic_db
+    password: daqsoftScenicDb2017%$
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialSize: 20
+    minIdle: 20
+    maxActive: 100
+    maxWait: 60000
+    poolPreparedStatements: true
+    maxPoolPreparedStatementPerConnectionSize: 100
+    connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  freemarker:
+    template-loader-path: classpath:/web/
+    cache: false
+    charset: UTF-8
+    check-template-location: true
+    content-type: text/html
+    expose-request-attributes: true
+    expose-session-attributes: true
+    suffix: .ftl
+  redis:
+    database: 4 # Redis数据库索引4
+#    host: 120.24.82.80
+    host: 10.44.72.240 # Redis服务器地址
+    port: 7000  # Redis服务器连接端口
+    password: D!@#daqiasd123sof123123DFSA@@^&{}20160Daa@#%FD<
+    pool:
+      max-active: 8 # 连接池最大连接数(使用负值表示没有限制)
+      max-wait: -1  #连接池最大阻塞等待时间(使用负值表示没有限制)
+      max-idle: 8   # 连接池中的最大空闲连接
+      min-idle: 0   # 连接池中的最小空闲连接
+    timeout: 0  #连接超时时间（毫秒）
+
+mybatis:
+  typeAliasesPackage: org.spring.springboot.domain
+  mapper-locations: classpath:mapper/*/*.xml
+  logImpl: STDOUT_LOGGING
+logging:
+    level:
+        org.spring.springboot.dao: DEBUG 
+        org.spring.springboot.controller: DEBUG
+#    file: ./logs/core.log
+    root: INFO
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params:
+      count: countSql

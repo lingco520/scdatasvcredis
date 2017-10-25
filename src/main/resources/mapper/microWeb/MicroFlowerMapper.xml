@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.spring.springboot.dao.microWeb.MicroFlowerMapper">
+
+
+    <select id="getFlowerInfo"   resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqFlowerVo" parameterType="java.util.Map">
+        <![CDATA[
+        SELECT s.id,s.scenicId,s.chName,s.lName,s.aName,s.distribution,s.kingDom,s.phylum,s.flowerClass,s.flowerOrder,s.family,s.genus,s.species,s.feature,s.growingEnv,s.breed,s.cultivationTech,s.assortment,s.chiefValue,s.floralEmblems,s.scenicScale,s.longitude,s.latitude,s.remark,s.status,s.sort,s.image
+        FROM API_FLOWER s
+        WHERE  s.`status` != -99 and s.`status` != 0 and s.vcode=#{vcode}
+        LIMIT #{page},#{pageSize};
+        ]]>
+    </select>
+
+    <select id="getFlowerCount"    resultType="java.lang.Integer" parameterType="map">
+        SELECT count(*)
+        FROM API_FLOWER s
+        WHERE  s.`status` != -99 and  s.`status` != 0 and s.vcode=#{vcode}
+    </select>
+
+    <select id="getFlowerInfoId"    resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqFlower" parameterType="map">
+        SELECT s.id,s.scenicId,s.chName,s.lName,s.aName,s.distribution,s.kingDom,s.phylum,s.flowerClass,s.flowerOrder,s.family,s.genus,s.species,s.feature,s.growingEnv,s.breed,s.cultivationTech,s.assortment,s.chiefValue,s.floralEmblems,s.scenicScale,s.longitude,s.latitude,s.remark,s.status,s.sort,s.image
+        ,w.`name` as vname ,w.voiceUrl as voiceUrl FROM API_FLOWER s LEFT JOIN  w_voice_list w on  s.id= w.scenicId and w.vtype =1 and  s.`status` != 0 and w.status != 0
+        WHERE  s.`status` != -99 and s.vcode=#{vcode} and s.id=#{id};
+    </select>
+
+</mapper>

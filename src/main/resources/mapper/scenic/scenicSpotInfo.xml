@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.spring.springboot.dao.scenicspotinfo.ScenicSpotInfoDao">
+    <!--获取景点的最大承载量 -->
+    <select id="getScenicMaxquantity" parameterType="String" resultType="map">
+        SELECT t.name as name,t.maxCount as maxquantity from
+        (SELECT  b.NAME, a.maxCount FROM jq_scenic_comfort a,api_scenic_spots b where b.id = a.SCENICID
+        and a.vcode = #{vcode}
+        group by b.NAME,a.maxCount  order by a.maxcount+0 DESC) t group by t.NAME
+    </select>
+
+    <!-- 查询景区景点列表 -->
+    <select id="getScenicNamesList" parameterType="String" resultType="map">
+            select name,id from api_parking where vcode = #{vcode} AND `status` != -99
+    </select>
+    <!-- 查询景区景点停车场累计统计-->
+    <select id="getParkingCount" parameterType="map" resultType="Integer">
+        SELECT
+        COUNT(ID) as count
+        FROM
+        jq_tvpm_checkout
+        WHERE
+        VCODE = #{vcode}
+        AND ENTRANCETIME BETWEEN #{startTime}
+        AND #{endTime}
+        <if test="parkid != null and '' != parkid">
+            AND PARKID = #{parkid}
+        </if>
+    </select>
+</mapper>

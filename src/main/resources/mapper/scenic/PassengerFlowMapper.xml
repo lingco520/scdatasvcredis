@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="org.spring.springboot.dao.realpeople.PassengerFlowDao">
+
+    <!--团队分析-->
+    <select id="getTdClass"
+            resultType="String" parameterType="java.util.Map">
+        select SUM(TEMPLYQUANTITY) from jq_scenic_timely_population  WHERE   SOURCE Like'%团体%' and  vcode = #{vcode} AND DATE_FORMAT(TIME,"%Y") = #{date}
+
+    </select>
+
+    <!-- 年统计省内客流分析 全部-->
+    <select id="getProvinceLicensePlate" parameterType="Map"
+            resultType="org.spring.springboot.domain.madeVoBean.ProvinceLicensePlateVo">
+        <![CDATA[
+          SELECT
+            COUNT(ID) AS SUMCAR,
+            city AS CARFROM
+        FROM
+            jq_tvpm_checkout
+        WHERE
+            VCODE = #{vcode}
+        AND year = #{time}
+        AND province = #{province}
+        GROUP BY
+            city
+        ORDER BY
+            SUMCAR DESC
+        ]]>
+    </select>
+
+    <!-- 年统计省外客流分析 全部 @update zf 20170904-->
+    <select id="getProvinceOutside" parameterType="String"
+            resultType="org.spring.springboot.domain.madeVoBean.ProvinceLicensePlateVo">
+        <![CDATA[
+          SELECT t.province as CARFROM,COUNT(id) as SUMCAR FROM jq_tvpm_checkout t WHERE t.province NOT IN('未知',#{pname}) AND vcode=#{vcode}
+          AND t.ENTRANCETIME BETWEEN #{startDate} AND #{endDate}
+          GROUP BY t.province ORDER BY sumcar DESC
+        ]]>
+    </select>
+
+
+    <!--按年份统计当前景区实时人数-->
+    <select id="getRealPeopleSumByYear" parameterType="java.util.HashMap" resultType="map">
+        SELECT DATE_FORMAT(P.time,'%Y年') as time,
+        SUM(P.TOTAL) as num
+        FROM jq_scenic_timely_population as P
+        WHERE p.vcode = #{vcode} and year = #{year}
+        GROUP BY P.YEAR
+    </select>
+
+    <!--统计景区实时人数按天（当前时间之前的6天/或者当天）补偿方法-->
+    <select id="getPassengerFlowByDay" parameterType="java.util.HashMap" resultType="map">
+        SELECT ifnull(sum(TOTAL), 0) as num,DATE_FORMAT(TIME,'%Y-%m-%d') as time
+        FROM  jq_scenic_timely_population
+        where vcode = #{vcode} AND TIME BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE_FORMAT(TIME,'%Y-%m-%d');
+    </select>
+
+    <!--获取景区实时人数-->
+    <select id="getPassengerFlowByThisDay" parameterType="java.util.HashMap" resultType="map">
+        SELECT ifnull(sum(TOTAL), 0) as num,DATE_FORMAT(TIME,'%Y-%m-%d') as time
+        FROM  jq_scenic_timely_population
+        where vcode = #{vcode} AND TIME BETWEEN #{startTime} AND #{endTime}
+    </select>
+
+    <!--统计景区按小时的实时人数-->
+    <select id="getPassengerFlowByHour" parameterType="java.util.HashMap" resultType="map">
+        SELECT t.hh AS time,SUM(t.TOTAL) AS num,t.maxquantity AS maxquantity   FROM (
+        SELECT
+        s.time,
+        DATE_FORMAT(s.TIME, '%H') AS hh,
+        s.TOTAL,s.maxquantity
+        FROM
+        jq_scenic_timely_population s
+        WHERE
+        s.vcode = #{vcode}
+        AND s.TIME BETWEEN '${time} 00:00:00' and '${time} 23:59:59'
+        ) t
+        GROUP BY t.hh ORDER BY t.hh
+    </select>
+
+
+    <!--统计景区每天的景点数据,tanggm：最大承载加个null判断，页面会显示null-->
+    <select id="getPassengerFlowByScenic" parameterType="java.util.HashMap" resultType="map">
+       SELECT IFnull(sum(TOTAL), 0) AS num,ifnull(maxquantity,0) FROM
+        jq_scenic_timely_population
+        WHERE vcode = #{vcode}
+        AND TIME BETWEEN '${time} 00:00:00'
+        AND '${time} 23:59:59'
+        AND NAME=#{name}
+    </select>
+    <!--查询天景区线上票务-->
+    <select id="getOnlineByDay" parameterType="java.util.HashMap" resultType="String">
+        SELECT
+            ifnull(sum(s.count), 0) AS tours
+        FROM
+            jq_ota_data s
+        WHERE
+            s.vcode = #{vcode}
+        AND s.TIME BETWEEN #{startTime}
+        AND #{endTime}
+    </select>
+    <!--查询天景区线下票务-->
+    <select id="getOfflineByDay" parameterType="java.util.HashMap" resultType="String">
+        SELECT
+            ifnull(sum(s.count), 0) AS tours
+        FROM
+            jq_ticket s
+        WHERE
+            s.vcode = #{vcode}
+        AND s.TIME BETWEEN #{startTime}
+        AND #{endTime}
+    </select>
+    <!--查询景区景点数据-->
+    <select id="getScenicNames" parameterType="String" resultType="map">
+        SELECT
+                b. NAME as name,
+                a.maxCount as maxCount
+            FROM
+                jq_scenic_comfort a,
+                api_scenic_spots b
+            WHERE
+                b.id = a.SCENICID
+            AND b.`status` != - 99
+            AND a.vcode = #{vcode}
+            GROUP BY
+                b. NAME
+    </select>
+    <!--查询景区景点数据-->
+    <select id="getScenicPopulation" parameterType="map" resultType="map">
+        SELECT
+            NAME as scenicName,
+            IFnull(sum(TOTAL), 0) AS num
+        FROM
+            jq_scenic_timely_population
+        WHERE
+            vcode = #{vcode}
+        AND TIME BETWEEN #{startTime}
+        AND #{endTime}
+        GROUP BY
+            `NAME`
+    </select>
+
+    <!--银川花博会当天检票数和出票数-->
+    <select id="getYCHBHPassengerToday" parameterType="String" resultType="map">
+        SELECT sum(checkNum) as checkNum, sum(totalNum) as totalNum
+        from ychbh_passenger
+                where insertTime BETWEEN #{st} and #{et}
+    </select>
+
+    <!--银川花博会累计检票数-->
+    <select id="getYCHBHPassengerAll" parameterType="String" resultType="map">
+        SELECT sum(checkNum) as checkSum from ychbh_passenger
+    </select>
+
+
+    <!--银川花博会景区景点数据分析-->
+    <select id="getYCHBHSpotPassenger" parameterType="Map" resultType="Map">
+        SELECT IFnull(sum(TOTAL), 0) AS num,name FROM
+        jq_scenic_timely_population
+        WHERE vcode = #{vcode}
+        AND timeym = #{dateTime}
+        GROUP BY name
+
+    </select>
+
+    <!--银川花博会景区景点数据分析-->
+    <select id="getYCHBHSpotPassengerS" parameterType="Map" resultType="Map">
+        SELECT IFnull(sum(TOTAL), 0) AS num,name FROM
+        jq_scenic_timely_population
+        WHERE vcode = #{vcode}
+        AND time BETWEEN #{st} and #{et}
+        GROUP BY name
+
+    </select>
+    <!-- 查询时间范围中的具体天数 -->
+    <select id="getNumDays" resultType="int" parameterType="map">
+        select count(1) from
+        (select ID from jq_scenic_timely_population
+        where VCODE = #{vcode}
+        AND TIME BETWEEN #{startTime} AND #{endTime}
+        GROUP BY DATE_FORMAT(TIME,'%Y-%m-%d')) as temp;
+
+    </select>
+    <!-- 查询时间范围中的总数据 -->
+    <select id="getPeopleNum" resultType="int" parameterType="map">
+        SELECT
+            SUM(TOTAL)
+        FROM
+            jq_scenic_timely_population
+        WHERE
+            VCODE = #{vcode}
+        AND TIME BETWEEN #{startTime}
+        AND #{endTime}
+
+    </select>
+    <!-- 查询时间范围中的峰值 -->
+    <select id="getMaxDayNum" resultType="map" parameterType="map">
+        SELECT
+            SUM(TOTAL) as num,
+            DATE_FORMAT(TIME,'%Y-%m-%d') as maxDay
+        FROM
+            jq_scenic_timely_population
+        WHERE
+            VCODE = #{vcode}
+        AND TIME BETWEEN #{startTime}
+        AND #{endTime} GROUP BY DATE_FORMAT(TIME,'%Y-%m-%d') ORDER BY nums DESC LIMIT 1
+    </select>
+    <!--景区资源编码匹配大法 -->
+    <select id="getScenicOne"  resultType="Map">
+        SELECT id,name FROM four_scenic where code is null
+    </select>
+
+    <!--景区资源编码匹配大法 -->
+    <select id="getScenicTwo" parameterType="Map" resultType="Map">
+        SELECT id,name,code FROM four_scenic_code
+    </select>
+
+    <update id="insertScenicOne"  parameterType="java.util.Map">
+        update four_scenic set code = (#{code}) where id = #{id} ;
+    </update>
+
+
+    <!--景区游客来源分析，通用微件 -->
+    <select id="getPeopleComeTopTenCommon"  parameterType="java.util.Map" resultType="Map">
+     select count(id)*5 as sourcecityNew,province as sourceCity
+     FROM jq_tvpm_checkout where vcode = #{vcode} and YEAR =#{time} and province!='未知' group by province
+    </select>
+    <!-- 统计景区小时人数 -->
+    <select id="getScenicSpotsDataTime" parameterType="map" resultType="org.spring.springboot.domain.madeVoBean.ScenicSpotsTimeVo">
+        SELECT
+        GROUP_CONCAT(temp.count) AS count,
+        GROUP_CONCAT(temp.time) AS time,
+        GROUP_CONCAT(temp.`name`) AS NAME,
+        temp.dateTime AS dateTime
+        FROM
+        (
+        SELECT
+        SUM(TOTAL) AS count,
+        DATE_FORMAT(TIME, '%H') AS time,
+        DATE_FORMAT(TIME, '%Y-%m-%d') AS dateTime,
+        ss.`name`
+        FROM
+        jq_scenic_timely_population s,
+        api_scenic_spots ss
+        WHERE
+        s.VCODE = #{vcode}
+        AND s.`NAME` = ss.`name`
+        AND s.time between #{startTime} AND #{endTime}
+        GROUP BY
+        ss. NAME,
+        DATE_FORMAT(TIME, '%Y-%m-%d %H')
+        ) AS temp
+        GROUP BY
+        temp.dateTime;
+    </select>
+    <!-- 统计景区小时人数，历史数据 -->
+    <select id="getScenicSpotsDataTimeHistory" parameterType="map" resultType="org.spring.springboot.domain.madeVoBean.ScenicSpotsTimeVo">
+        SELECT
+        GROUP_CONCAT(temp.count) AS count,
+        GROUP_CONCAT(temp.time) AS time,
+        GROUP_CONCAT(temp.`name`) AS NAME,
+        temp.dateTime AS dateTime
+        FROM
+        (
+        SELECT
+        SUM(TOTAL) AS count,
+        DATE_FORMAT(TIME, '%H') AS time,
+        DATE_FORMAT(TIME, '%Y-%m-%d') AS dateTime,
+        ss.`name`
+        FROM
+        jq_scenic_timely_population s,
+        api_scenic_spots ss
+        WHERE
+        s.VCODE = #{vcode}
+        AND s.`NAME` = ss.`name`
+        GROUP BY
+        ss.NAME,
+        DATE_FORMAT(TIME, '%Y-%m-%d %H')
+        ) AS temp
+        GROUP BY
+        temp.dateTime;
+    </select>
+
+
+<!--云台山大数据移动数据来源模拟开始-->
+
+   <!-- 云台山小时段数据模拟插入-->
+    <insert id="saveYtsPassengerByDay"  parameterType="java.util.Map">
+        INSERT INTO yts_yd_passengero
+        (currentTime,newTotal,leaveTotal,currentDate)
+        VALUES (#{currentTime} ,#{newTotal} ,#{leaveTotal},#{currentDate}) ;
+    </insert>
+
+    <!-- 云台山小时段数据模拟查询-->
+    <select id="getYtsPassengerByDay"  parameterType="java.util.Map" resultType="Map">
+        select newTotal,leaveTotal,currentTime,currentDate 
+        FROM yts_yd_passengero where currentDate = #{thisDay}
+    </select>
+
+
+    <!-- 云台山日客流趋势模拟-->
+    <insert id="savePassengerByDayYts"  parameterType="java.util.Map">
+        INSERT INTO
+        yts_yd_passengert
+        (newadd,resident,leavenum,currentDate)
+        VALUES (#{newadd},#{resident},#{leave},#{day}) ;
+    </insert>
+
+    <!-- 云台山日客流趋势模拟查询-->
+    <select id="getYtsPassengerDetailByDay"  parameterType="java.util.Map" resultType="Map">
+        select newadd,resident,leavenum,currentDate
+        FROM yts_yd_passengert where currentDate BETWEEN  #{startTime} and #{endTime}
+    </select>
+
+    <!-- 云台山日客流驻留时长模拟-天段-->
+    <insert id="savePassengerByTimeYts"  parameterType="java.util.Map">
+        INSERT INTO
+        yts_yd_passengerth
+        (newadd,resident,currentDate)
+        VALUES (#{newadd},#{resident},#{time}) ;
+    </insert>
+
+    <!-- 云台山日客流驻留时长模拟查询-天段-->
+    <select id="getYtsPassengerDetailByTime"  parameterType="java.util.Map" resultType="Map">
+        select newadd,resident,currentDate
+        FROM yts_yd_passengerth where currentDate BETWEEN  #{startTime} and #{endTime}
+    </select>
+
+
+    <!-- 云台山日客流驻留时长模拟-小时段-->
+    <insert id="savePeopleRemainByYts"  parameterType="java.util.Map">
+        INSERT INTO
+        yts_yd_passengerf
+        (hoursTime,num,currentDate)
+        VALUES (#{hoursTime},#{num},#{currentDate}) ;
+    </insert>
+
+    <!-- 云台山日客流驻留时长模拟查询-小时段-->
+    <select id="getPeopleRemainByYts"  parameterType="java.util.Map" resultType="Map">
+        select hoursTime,num
+        FROM yts_yd_passengerf where currentDate =#{currentDate}
+    </select>
+
+    <!--云台山大数据移动数据来源模拟结束-->
+</mapper>

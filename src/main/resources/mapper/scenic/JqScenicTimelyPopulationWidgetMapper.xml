@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.spring.springboot.dao.carflow.JqScenicTimelyPopulationWidgetDao">
+
+    <!--根据门票查询一天每时段的散客数量zf  @update zf 20170822-->
+    <select id="getScenicTimePeople" parameterType="map"
+            resultType="org.spring.springboot.domain.mysqlBean.JqScenicTimelyPopulation">
+            <![CDATA[
+            SELECT DATE_FORMAT(s.time,'%Y-%m-%d %H') as time ,DATE_FORMAT(s.time,'%H:00') as PopTime ,SUM(TOTAL) as SumPeople,s.source
+            FROM jq_scenic_timely_population s where  s.vcode = #{vcode} and s.source != '团体'  and (s.time BETWEEN #{startTime} and #{endTime})
+            GROUP BY DATE_FORMAT(s.time,'%Y-%m-%d %H')
+            ]]>
+    </select>
+</mapper>

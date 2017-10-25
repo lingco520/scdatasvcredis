@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.spring.springboot.dao.microWeb.MicroScenicInfoMapper">
+
+
+
+    <select id="getScenic" resultType="org.spring.springboot.domain.mysqlBean.microWeb.ScenicSpotsArea" parameterType="String">
+        SELECT
+        s.id,s.address,s.image,s.introduce,s.latitude,s.longitude,s.level,s.name,s.open_Time,s.phone,s.play_Time,s.scenic_Type,s.vcode,t.typeName,
+        s.status,s.resource_code,s.pro_type,s.sketch_picture,s.play_sign,s.check_price,w.url as sign_720
+        FROM
+        JQ_SCENIC_AREAS s
+        LEFT JOIN API_SCENIC_SPOTS_TYPE t  on (s.SCENIC_TYPE = t.code)
+        LEFT JOIN W_FP_720 w on (w.scenicId=s.id) and s.vcode=w.vcode
+        WHERE s.status !=-99 and s.status !=0  and  s.vcode=#{vcode};
+    </select>
+
+
+    <select id="getScenicSpots" resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqScenic_SpotsVo" parameterType="java.util.Map">
+        <![CDATA[
+					SELECT s.id,s.name,s.longitude,s.latitude,s.pictureLibrary as pictureLibrary,s.introduction,s.advisoryTelephone as phone,s.vcode,w.url as sign720
+			,s.pixel_x,s.Pixel_y ,v.`name` as vname ,v.voiceUrl  FROM  w_fp_720 w RIGHT JOIN   API_SCENIC_SPOTS s on w.scenicId=s.id and w.status !=-99  left join w_voice_list v on  v.scenicId= s.id  and s.status != -99  and s.status != 0 and v.vtype=0 and v.status != -99 and v.status != 0
+			WHERE  s.vcode = #{vcode}  and s.status != -99 and s.status != 0   order by s.sort asc LIMIT #{page},#{pageSize};
+		]]>
+    </select>
+
+
+    <select id="getScenicSpotsMap" resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqScenic_SpotsVo" parameterType="java.util.Map">
+        <![CDATA[
+					SELECT s.id,s.name,s.longitude,s.latitude,s.pictureLibrary as pictureLibrary,s.introduction,s.advisoryTelephone as phone,s.vcode,w.url as sign720
+			,s.pixel_x,s.Pixel_y ,v.`name` as vname ,v.voiceUrl  FROM  w_fp_720 w RIGHT JOIN   API_SCENIC_SPOTS s on w.scenicId=s.id and w.status !=-99  left join w_voice_list v on  v.scenicId= s.id  and s.status != -99  and s.status != 0 and v.vtype=0 and v.status != -99 and v.status != 0
+			WHERE  s.vcode = #{vcode}  and s.status != -99 and s.status != 0 and  s.application = 0
+		]]>
+    </select>
+
+    <select id="getScenicSpotsDetail" resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqScenic_SpotsVo" parameterType="java.util.Map">
+        <![CDATA[
+SELECT s.id,s.name,s.longitude,s.latitude,s.pictureLibrary as pictureLibrary,s.introduction,s.advisoryTelephone as phone,s.vcode,w.url as sign720
+			,s.pixel_x,s.Pixel_y ,v.`name` as vname ,v.voiceUrl  FROM  w_fp_720 w RIGHT JOIN   API_SCENIC_SPOTS s on w.scenicId=s.id and w.status !=-99 left join w_voice_list v on  v.scenicId= s.id  and s.status != -99 and s.status != 0  and v.vtype=0 and v.status != 0 and v.status != -99
+			WHERE  s.vcode = #{vcode}  and s.id=#{id} and s.status != -99;
+		]]>
+    </select>
+
+    <select id="getScenicSpotsCount" resultType="java.lang.Integer" parameterType="java.util.Map">
+        <![CDATA[
+			select count(*) from API_SCENIC_SPOTS s where s.vcode=#{vcode} and s.status!=-99 and  s.status!=0;
+		]]>
+    </select>
+
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.spring.springboot.dao.microWeb.MicroMultiMediaMapper">
+
+
+    <!--720全景 -->
+    <select id="getFullSight" resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqInfo720FullSightVo" parameterType="java.util.Map">
+      SELECT w.title,w.url,w.img,w.status as statu,w.type,s.name as scenicName,w.vcode,w.sort
+      FROM w_fp_720 w,api_scenic_spots s WHERE w.scenicId=s.id and w.vcode=#{vcode} and w.status !=-99 and w.status !=0  ORDER BY w.sort asc limit #{page},#{pageSize};
+    </select>
+
+    <select id="getFullSightCount" resultType="java.lang.Integer" parameterType="map">
+        SELECT count(*) as count from w_fp_720 where vcode=#{vcode}  and status  != -99 and status  != 0
+    </select>
+
+
+    <!--图片库 -->
+
+    <select id="getPictureInfo" resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqInfoPictureLibraryVo" parameterType="java.util.Map">
+        <![CDATA[
+     SELECT s.id,s.title,s.url,s.tagId,ss.`name` as name,s.scenicId as scenicId,s.status as statu,s.sort,s.vcode,s.smallUrl,m.name as type,s.smallWidth as width,s.smallHeight as height
+     FROM API_PICTURE_LIBRARY as s
+        LEFT JOIN API_SCENIC_SPOTS ss on s.scenicId = ss.id  LEFT JOIN W_NAVIGATION_MANAGE m on s.tagID=m.id  WHERE
+	(m.`name` = #{season} OR m.`name` = #{seasonO}
+		OR m.`name` = #{seasonT}
+		OR m.`name` = #{seasonTh}
+		)
+      and  s.status != -99 and s.source = 2 and s.vcode=#{vcode} and s.status != 0
+      ORDER BY  s.sort ASC LIMIT #{page},#{pageSize};
+       ]]>
+    </select>
+    <select id="getPictureCount" resultType="java.lang.Integer" parameterType="java.util.Map">
+        SELECT count(*)
+        FROM API_PICTURE_LIBRARY as s
+        LEFT JOIN API_SCENIC_SPOTS ss on s.scenicId = ss.id  LEFT JOIN W_NAVIGATION_MANAGE m on s.tagID=m.id
+        WHERE s.status != -99 and s.source = 2 and s.vcode=#{vcode} and (m.`name` = #{season} OR m.`name` = #{seasonO}
+        OR m.`name` = #{seasonT}
+        OR m.`name` = #{seasonTh})  and s.status != 0;
+    </select>
+
+
+    <!--视频库 -->
+    <select id="getVideoInfo" resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqInfoVideoLibrary" parameterType="String">
+        select s.id,s.title,s.url,s.tagId,ss.`name`,s.scenicId as scenicId2,s.count,s.image,m.name as typename,
+        s.status as statu,s.sort,s.imgUrl,s.vcode,s.remark
+        from api_video_library as s left join api_scenic_spots ss on s.scenicId = ss.id
+        LEFT JOIN w_navigation_manage m on s.tagId=m.id and s.status !=0
+        where s.status != -99   and s.vcode=#{vcode}
+    </select>
+
+
+    <!--实时人数 -->
+
+
+    <select id="getVoiceInfo"   resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqVoice" parameterType="java.util.Map">
+        <![CDATA[
+    select s.id,s.name,s.voiceUrl,p.name as scenicName,(CASE s.status WHEN '1' IS NOT NULL THEN '启用' ELSE '禁用' END) as status,s.sort ,s.type,s.voiceLenth from w_voice_list as s, api_scenic_spots as p where s.status != -99 and p.status != 99 and p.id=s.scenicId  and s.status != 0  and s.vcode=#{vcode}  LIMIT #{page},#{pageSize};
+        ]]>
+    </select>
+
+    <select id="getVoiceCount"    resultType="java.lang.Integer" parameterType="map">
+        SELECT count(*)
+        FROM w_voice_list s
+        WHERE  s.`status` != -99 and s.status != 0 and s.vcode=#{vcode}
+    </select>
+
+    <select id="getVoiceInfoId"    resultType="org.spring.springboot.domain.mysqlBean.microWeb.JqVoice" parameterType="map">
+        select s.id,s.name,s.voiceUrl,p.name as scenicName,(CASE s.status WHEN '1' IS NOT NULL THEN '启用' ELSE '禁用' END) as status,s.sort ,s.type,s.voiceLenth from  w_voice_list as s, api_scenic_spots as p where s.status != -99 and p.status != 99 and p.id=s.scenicId  and s.vcode=#{vcode} and s.id=#{id};
+    </select>
+</mapper>

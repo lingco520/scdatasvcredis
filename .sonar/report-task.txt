@@ -1,0 +1,5 @@
+projectKey=hjy
+serverUrl=http://192.168.100.45:9000/sonar
+dashboardUrl=http://192.168.100.45:9000/sonar/dashboard/index/hjy
+ceTaskId=AV4Ht7S17M4SlgPSJy0a
+ceTaskUrl=http://192.168.100.45:9000/sonar/api/ce/task?id=AV4Ht7S17M4SlgPSJy0a
